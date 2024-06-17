@@ -1,0 +1,78 @@
+package main
+
+import (
+	"fmt"
+	"math"
+	"time"
+)
+
+var jumlahKota int
+var kota []string
+var jarak [][]float64
+
+// Fungsi untuk mencari kota terdekat yang belum dikunjungi
+func cariTerdekat(kotaSekarang int, dikunjungi []bool) int {
+	minJarak := math.MaxFloat64
+	kotaTerdekat := -1
+	for i := 0; i < jumlahKota; i++ {
+		if !dikunjungi[i] && jarak[kotaSekarang][i] < minJarak {
+			minJarak = jarak[kotaSekarang][i]
+			kotaTerdekat = i
+		}
+	}
+	return kotaTerdekat
+}
+
+func main() {
+	fmt.Println("Masukkan jumlah kota:")
+	fmt.Scan(&jumlahKota)
+
+	kota = make([]string, jumlahKota)
+	jarak = make([][]float64, jumlahKota)
+	for i := 0; i < jumlahKota; i++ {
+		jarak[i] = make([]float64, jumlahKota)
+	}
+
+	fmt.Println("\nMasukkan nama kota:")
+	for i := 0; i < jumlahKota; i++ {
+		fmt.Scan(&kota[i])
+	}
+
+	fmt.Println("\nMasukkan matriks jarak:")
+	for i := 0; i < jumlahKota; i++ {
+		for j := 0; j < jumlahKota; j++ {
+			fmt.Scan(&jarak[i][j])
+		}
+	}
+
+	dikunjungi := make([]bool, jumlahKota)
+	jalur := make([]int, jumlahKota)
+	jalur[0] = 0
+	dikunjungi[0] = true
+	biayaTerkecil := 0.0
+
+	start := time.Now()
+
+	for i := 1; i < jumlahKota; i++ {
+		kotaSekarang := jalur[i-1]
+		kotaTerdekat := cariTerdekat(kotaSekarang, dikunjungi)
+		jalur[i] = kotaTerdekat
+		dikunjungi[kotaTerdekat] = true
+		biayaTerkecil += jarak[kotaSekarang][kotaTerdekat]
+	}
+
+	// Kembali ke kota asal
+	biayaTerkecil += jarak[jalur[jumlahKota-1]][0]
+
+	duration := time.Since(start)
+
+	// Mencetak jalur terbaik dengan nama kota
+	fmt.Print("\nJalur terbaik: ")
+	for i := 0; i < jumlahKota; i++ {
+		fmt.Print(kota[jalur[i]], " ")
+	}
+	fmt.Print(kota[jalur[0]], "\n") // Kembali ke kota asal
+
+	fmt.Printf("Bobot total (terkecil): %.2f\n", biayaTerkecil)
+	fmt.Printf("Waktu eksekusi: %.3f detik\n", float64(duration.Nanoseconds())/1e9)
+}
