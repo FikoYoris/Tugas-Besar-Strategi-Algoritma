@@ -1,0 +1,87 @@
+package main
+
+import (
+	"fmt"
+	"math"
+	"time"
+)
+
+var jumlahKota int
+var kota []string
+var jarak [][]float64
+var jalurTerbaik []int
+var biayaTerkecil float64
+
+// Fungsi untuk menghitung biaya dari jalur tertentu
+func hitungBiaya(jalur []int) float64 {
+	biaya := 0.0
+	for i := 0; i < len(jalur)-1; i++ {
+		biaya += jarak[jalur[i]][jalur[i+1]]
+	}
+	biaya += jarak[jalur[len(jalur)-1]][jalur[0]] // kembali ke kota asal
+	return biaya
+}
+
+// Fungsi untuk menghasilkan semua permutasi dari jalur
+func permutasi(arr []int, l, r int) {
+	if l == r {
+		biaya := hitungBiaya(arr)
+		if biaya < biayaTerkecil {
+			biayaTerkecil = biaya
+			copy(jalurTerbaik, arr)
+		}
+	} else {
+		for i := l; i <= r; i++ {
+			arr[l], arr[i] = arr[i], arr[l]
+			permutasi(arr, l+1, r)
+			arr[l], arr[i] = arr[i], arr[l] // backtrack
+		}
+	}
+}
+
+func main() {
+	fmt.Println("Masukkan jumlah kota:")
+	fmt.Scan(&jumlahKota)
+
+	kota = make([]string, jumlahKota)
+	jarak = make([][]float64, jumlahKota)
+	for i := 0; i < jumlahKota; i++ {
+		jarak[i] = make([]float64, jumlahKota)
+	}
+
+	fmt.Println("\nMasukkan nama kota:")
+	for i := 0; i < jumlahKota; i++ {
+		fmt.Scan(&kota[i])
+	}
+
+	fmt.Println("\nMasukkan matriks jarak:")
+	for i := 0; i < jumlahKota; i++ {
+		for j := 0; j < jumlahKota; j++ {
+			fmt.Scan(&jarak[i][j])
+		}
+	}
+
+	jalur := make([]int, jumlahKota)
+	for i := 0; i < jumlahKota; i++ {
+		jalur[i] = i
+	}
+
+	jalurTerbaik = make([]int, jumlahKota)
+	biayaTerkecil = math.MaxFloat64
+
+	start := time.Now()
+
+	permutasi(jalur, 0, jumlahKota-1)
+
+	duration := time.Since(start)
+
+	// Mencetak jalur terbaik dengan nama kota
+	fmt.Print("\nJalur terbaik: ")
+	for i := 0; i < jumlahKota; i++ {
+		fmt.Print(kota[jalurTerbaik[i]], " ")
+	}
+	fmt.Print(kota[jalurTerbaik[0]], "\n")
+
+	fmt.Printf("Bobot total (terkecil): %.2f\n", biayaTerkecil)
+	fmt.Printf("Waktu eksekusi: %.3f detik\n", float64(duration.Nanoseconds()))
+}
